@@ -1,0 +1,35 @@
+{
+    "name": "fmasites/omeda",
+    "description": "Omeda API client and utilities for Laravel",
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "php": "^8.3",
+        "illuminate/support": "^11.0|^12.0",
+        "illuminate/http": "^11.0|^12.0",
+        "illuminate/cache": "^11.0|^12.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^10.0",
+        "phpunit/phpunit": "^11.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "FMASites\\Omeda\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "FMASites\\Omeda\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "FMASites\\Omeda\\OmedaServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
