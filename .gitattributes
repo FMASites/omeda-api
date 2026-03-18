@@ -1,4 +1,5 @@
 /vendor export-ignore
+/composer.lock export-ignore
 /tests export-ignore
 /.idea export-ignore
 /phpunit.xml export-ignore
