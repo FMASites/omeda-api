@@ -3,46 +3,40 @@
 namespace FMASites\Omeda\Tests\OmedaApi;
 
 use FMASites\Omeda\OmedaApi;
+use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\Http;
 use PHPUnit\Framework\Attributes\Test;
 
 class method_brandComprehensiveLookupTest extends class_OmedaApi
 {
     #[Test]
-    public function callsCorrectOmedaEndpoint()
+    public function callsCorrectOmedaEndpointWithHeaders()
     {
         // Arrange
-        $omedaApi = $this->getMockBuilder(OmedaApi::class)
-            ->onlyMethods(['makeGetRequest'])
-            ->setConstructorArgs([$this->testBaseApiUrl])
-            ->getMock();
-        $omedaApi->method('makeGetRequest')->willReturn(OmedaResponse::$brandComprehensiveLookup);
-
-        // Assert
-        $omedaApi->expects($this->once())
-            ->method('makeGetRequest')
-            ->with('comp/*');
+        Http::fake(['*' => Http::response([], 200)]);
+        $api = new OmedaApi($this->testBaseApiUrl);
 
         // Act
-        $omedaApi->brandComprehensiveLookup();
+        $api->brandComprehensiveLookup();
+
+        // Assert
+        Http::assertSent(function (Request $request) {
+            return $request->url() === "$this->testBaseApiUrl/comp/*"
+                && $request->hasHeader('content-type', 'application/json')
+                && $request->hasHeader('x-omeda-appid', $this->testOmedaAppId);
+        });
     }
 
     #[Test]
     public function returnsDataArray_onSuccess()
     {
         // Arrange
-        $response = [
-            'prop1' => 'value1',
-        ];
-        $omedaApi = $this->getMockBuilder(OmedaApi::class)
-            ->onlyMethods(['makeGetRequest'])
-            ->setConstructorArgs([$this->testBaseApiUrl])
-            ->getMock();
-        $omedaApi->expects($this->once())
-            ->method('makeGetRequest')
-            ->willReturn($response);
+        $response = ['prop1' => 'value1'];
+        Http::fake(['*' => Http::response($response, 200)]);
+        $api = new OmedaApi($this->testBaseApiUrl);
 
         // Act
-        $result = $omedaApi->brandComprehensiveLookup();
+        $result = $api->brandComprehensiveLookup();
 
         // Assert
         $this->assertEquals($response, $result);
@@ -55,16 +49,12 @@ class method_brandComprehensiveLookupTest extends class_OmedaApi
     #[Test]
     public function returnsNull_on404()
     {
-        $omedaApi = $this->getMockBuilder(OmedaApi::class)
-            ->onlyMethods(['makeGetRequest'])
-            ->setConstructorArgs([$this->testBaseApiUrl])
-            ->getMock();
-        $omedaApi->expects($this->once())
-            ->method('makeGetRequest')
-            ->willReturn(false);
+        // Arrange
+        Http::fake(['*' => Http::response([], 404)]);
+        $api = new OmedaApi($this->testBaseApiUrl);
 
         // Act
-        $result = $omedaApi->brandComprehensiveLookup();
+        $result = $api->brandComprehensiveLookup();
 
         // Assert
         $this->assertNull($result);

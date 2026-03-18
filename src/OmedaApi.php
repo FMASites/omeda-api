@@ -1,14 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace FMASites\Omeda;
 
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 
 class OmedaApi
 {
-    public readonly string $baseApiUrl;
-    public readonly string $clientBaseApiUrl;
+    private readonly string $baseApiUrl;
+    private readonly string $clientBaseApiUrl;
 
     public function __construct(?string $baseApiUrl = null, ?string $clientBaseApiUrl = null)
     {
@@ -17,7 +20,7 @@ class OmedaApi
     }
 
     // https://knowledgebase.omeda.com/omedaclientkb/brand-comprehensive-lookup-service
-    public function brandComprehensiveLookup()
+    public function brandComprehensiveLookup(): array|null
     {
         return Cache::remember('brandComprehensiveLookup', 28800, function () {
             return $this->makeGetRequest('comp/*') ?: null;
@@ -25,20 +28,20 @@ class OmedaApi
     }
 
     // https://knowledgebase.omeda.com/omedaclientkb/customer-comprehensive-lookup-by-customer-id
-    public function customerComprehensiveLookup($id)
+    public function customerComprehensiveLookup(int|string $id): array|false
     {
         return $this->makeGetRequest("customer/$id/comp/*");
     }
 
     // https://knowledgebase.omeda.com/omedaclientkb/customer-lookup-by-email-address
-    public function customerLookupByEmail($email)
+    public function customerLookupByEmail(string $email): array|false
     {
         return $this->makeGetRequest("customer/email/$email/*");
     }
 
     // Part of Utility APIs, which is a separate bucket of permissions on the API key
     // https://knowledgebase.omeda.com/omedaclientkb/postal-info-lookup
-    public function postalInfoLookup($zipCode)
+    public function postalInfoLookup(string $zipCode): Response
     {
         $data = [
             'PostalInfo' => [
@@ -58,13 +61,13 @@ class OmedaApi
         ]);
     }
 
-    public function storeCustomerAndOrder($data)
+    public function storeCustomerAndOrder(array $data): Response
     {
         return $this->makePostRequest("storecustomerandorder/*", $data);
     }
 
     // https://knowledgebase.omeda.com/omedaclientkb/transaction-lookup
-    public function transactionLookup($transactionId)
+    public function transactionLookup(int|string $transactionId): array|false
     {
         return $this->makeGetRequest("transaction/$transactionId/*");
     }
@@ -84,7 +87,7 @@ class OmedaApi
         return $this->makePostRequest("optinfilterqueue/*", $data, $this->clientBaseApiUrl);
     }
 
-    public function makeGetRequest($endpoint, ?string $baseUrl = null)
+    private function makeGetRequest(string $endpoint, ?string $baseUrl = null): array|false
     {
         $url = ($baseUrl ?? $this->baseApiUrl) . "/$endpoint";
         $response = Http::withHeaders([
@@ -100,7 +103,7 @@ class OmedaApi
         return false;
     }
 
-    public function makePostRequest($endpoint, $data, ?string $baseUrl = null)
+    private function makePostRequest(string $endpoint, array $data, ?string $baseUrl = null): Response
     {
         $url = ($baseUrl ?? $this->baseApiUrl) . "/$endpoint";
 

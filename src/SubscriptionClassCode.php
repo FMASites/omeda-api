@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 // https://knowledgebase.omeda.com/omedaclientkb/api-standard-constants-and-codes#APIStandardConstantsandCodes-SubscriptionClassCodes
 namespace FMASites\Omeda;
 

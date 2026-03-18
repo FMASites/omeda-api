@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace FMASites\Omeda;
 
 class DataAdapter
 {
-    public static function filterByDemographicTypes($brandComprehensiveLookupData, $types)
+    public static function filterByDemographicTypes(array $brandComprehensiveLookupData, array $types): array
     {
         $filteredDemographics = array_filter(
             $brandComprehensiveLookupData['Demographics'],
@@ -18,7 +20,7 @@ class DataAdapter
         return $brandComprehensiveLookupData;
     }
 
-    public static function simplifyBrandComprehensiveLookupData($brandComprehensiveLookupData) {
+    public static function simplifyBrandComprehensiveLookupData(array $brandComprehensiveLookupData): array {
         return [
             'brandAbbrev' => $brandComprehensiveLookupData['BrandAbbrev'],
             'demographics' => array_values($brandComprehensiveLookupData['Demographics']),
@@ -28,7 +30,7 @@ class DataAdapter
         ];
     }
 
-    public static function removeDemographicValueOptionsById($brandComprehensiveLookupData, $optionIds)
+    public static function removeDemographicValueOptionsById(array $brandComprehensiveLookupData, array $optionIds): array
     {
         $brandComprehensiveLookupData['Demographics'] = array_map(
             function ($demographic) use ($optionIds) {
@@ -48,7 +50,7 @@ class DataAdapter
         return $brandComprehensiveLookupData;
     }
 
-    public static function simplifyProductData($productsData)
+    public static function simplifyProductData(array $productsData): array
     {
         return array_map(function ($productData) {
             return [
