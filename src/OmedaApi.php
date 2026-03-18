@@ -8,10 +8,12 @@ use Illuminate\Support\Facades\Http;
 class OmedaApi
 {
     public readonly string $baseApiUrl;
+    public readonly string $clientBaseApiUrl;
 
-    public function __construct(?string $baseApiUrl = null)
+    public function __construct(?string $baseApiUrl = null, ?string $clientBaseApiUrl = null)
     {
         $this->baseApiUrl = $baseApiUrl ?? config('omeda.baseApiUrl') . config('omeda.brand');
+        $this->clientBaseApiUrl = $clientBaseApiUrl ?? config('omeda.clientBaseApiUrl') . config('omeda.client');
     }
 
     // https://knowledgebase.omeda.com/omedaclientkb/brand-comprehensive-lookup-service
@@ -67,9 +69,24 @@ class OmedaApi
         return $this->makeGetRequest("transaction/$transactionId/*");
     }
 
-    public function makeGetRequest($endpoint)
+    // https://knowledgebase.omeda.com/omedaclientkb/email-optin-queue
+    public function emailOptinQueue(string $email, string|array $deploymentTypeId, array $options = [])
     {
-        $url = "$this->baseApiUrl/$endpoint";
+        $data = [
+            'DeploymentTypeOptIn' => [
+                array_merge([
+                    'EmailAddress' => $email,
+                    'DeploymentTypeId' => $deploymentTypeId,
+                ], $options),
+            ],
+        ];
+
+        return $this->makePostRequest("optinfilterqueue/*", $data, $this->clientBaseApiUrl);
+    }
+
+    public function makeGetRequest($endpoint, ?string $baseUrl = null)
+    {
+        $url = ($baseUrl ?? $this->baseApiUrl) . "/$endpoint";
         $response = Http::withHeaders([
             'content-type' => 'application/json',
             'x-omeda-appid' => config('omeda.appId'),
@@ -83,9 +100,9 @@ class OmedaApi
         return false;
     }
 
-    public function makePostRequest($endpoint, $data)
+    public function makePostRequest($endpoint, $data, ?string $baseUrl = null)
     {
-        $url = "$this->baseApiUrl/$endpoint";
+        $url = ($baseUrl ?? $this->baseApiUrl) . "/$endpoint";
 
         // Return the response and let the calling function decide how to handle it
         return Http::withHeaders([
